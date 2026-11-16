@@ -156,6 +156,15 @@ def visual(page, index, kind, title, position, roles):
             "drillFilterOtherVisuals": True,
         },
     }
+    if kind == "slicer":
+        content["visual"]["objects"] = {
+            "data": [{"properties": {"mode": literal("'Dropdown'")}}]
+        }
+        content["visual"]["visualContainerObjects"] = {
+            "padding": [{"properties": {
+                side: literal("8D") for side in ("top", "bottom", "left", "right")
+            }}]
+        }
     for fields in roles.values():
         for binding in fields:
             kind_key, expr = next(iter(binding["field"].items()))
