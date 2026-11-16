@@ -1,0 +1,407 @@
+{
+  "name": "Inventory",
+  "compatibilityLevel": 1600,
+  "model": {
+    "culture": "en-US",
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "tables": [
+      {
+        "name": "Month",
+        "columns": [
+          {
+            "name": "Month",
+            "sourceColumn": "Month",
+            "dataType": "string",
+            "summarizeBy": "none"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Month",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": "#table(type table [#\"Month\" = text], {\n{\"2025-01\"},\n{\"2025-02\"},\n{\"2025-03\"},\n{\"2025-04\"},\n{\"2025-05\"},\n{\"2025-06\"}\n})"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Warehouse",
+        "columns": [
+          {
+            "name": "Region",
+            "sourceColumn": "Region",
+            "dataType": "string",
+            "summarizeBy": "none"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Warehouse",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": "#table(type table [#\"Region\" = text], {\n{\"North\"},\n{\"West\"},\n{\"South\"},\n{\"East\"}\n})"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Product",
+        "columns": [
+          {
+            "name": "SKU",
+            "sourceColumn": "SKU",
+            "dataType": "string",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Category",
+            "sourceColumn": "Category",
+            "dataType": "string",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Unit Cost",
+            "sourceColumn": "Unit Cost",
+            "dataType": "int64",
+            "summarizeBy": "none"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Product",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": "#table(type table [#\"SKU\" = text, #\"Category\" = text, #\"Unit Cost\" = Int64.Type], {\n{\"BAG-01\", \"Travel\", 620},\n{\"BAG-02\", \"Travel\", 470},\n{\"CABLE-03\", \"Electronics\", 120},\n{\"HUB-04\", \"Electronics\", 350},\n{\"BOTTLE-05\", \"Home\", 180},\n{\"LAMP-06\", \"Home\", 540},\n{\"CASE-07\", \"Electronics\", 220},\n{\"PILLOW-08\", \"Home\", 310}\n})"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Supplier",
+        "columns": [
+          {
+            "name": "Supplier",
+            "sourceColumn": "Supplier",
+            "dataType": "string",
+            "summarizeBy": "none"
+          }
+        ],
+        "measures": [],
+        "partitions": [
+          {
+            "name": "Supplier",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": "#table(type table [#\"Supplier\" = text], {\n{\"Meridian Components\"},\n{\"Harbor Goods\"},\n{\"Ridgeway Supply\"}\n})"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Inventory",
+        "columns": [
+          {
+            "name": "Month",
+            "sourceColumn": "Month",
+            "dataType": "string",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Region",
+            "sourceColumn": "Region",
+            "dataType": "string",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "SKU",
+            "sourceColumn": "SKU",
+            "dataType": "string",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "On Hand",
+            "sourceColumn": "On Hand",
+            "dataType": "int64",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Reorder Floor",
+            "sourceColumn": "Reorder Floor",
+            "dataType": "int64",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Stock Value",
+            "sourceColumn": "Stock Value",
+            "dataType": "int64",
+            "summarizeBy": "none"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Inventory Value",
+            "expression": "VAR AsOf = MAX(Inventory[Month]) RETURN CALCULATE(SUM(Inventory[Stock Value]), Inventory[Month] = AsOf)",
+            "formatString": "\"INR \"#,0"
+          },
+          {
+            "name": "On Hand Units",
+            "expression": "VAR AsOf = MAX(Inventory[Month]) RETURN CALCULATE(SUM(Inventory[On Hand]), Inventory[Month] = AsOf)",
+            "formatString": "#,0"
+          },
+          {
+            "name": "Below Reorder",
+            "expression": "VAR AsOf = MAX(Inventory[Month]) RETURN COUNTROWS(FILTER(Inventory, Inventory[Month] = AsOf && Inventory[On Hand] < Inventory[Reorder Floor])) + 0",
+            "formatString": "#,0"
+          },
+          {
+            "name": "Reorder Floor Units",
+            "expression": "VAR AsOf = MAX(Inventory[Month]) RETURN CALCULATE(SUM(Inventory[Reorder Floor]), Inventory[Month] = AsOf)",
+            "formatString": "#,0"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Inventory",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": "#table(type table [#\"Month\" = text, #\"Region\" = text, #\"SKU\" = text, #\"On Hand\" = Int64.Type, #\"Reorder Floor\" = Int64.Type, #\"Stock Value\" = Int64.Type], {\n{\"2025-01\", \"North\", \"BAG-01\", 173, 20, 107260},\n{\"2025-01\", \"North\", \"BAG-02\", 255, 36, 119850},\n{\"2025-01\", \"North\", \"CABLE-03\", 140, 26, 16800},\n{\"2025-01\", \"North\", \"HUB-04\", 141, 22, 49350},\n{\"2025-01\", \"North\", \"BOTTLE-05\", 112, 35, 20160},\n{\"2025-01\", \"North\", \"LAMP-06\", 102, 20, 55080},\n{\"2025-01\", \"North\", \"CASE-07\", 59, 20, 12980},\n{\"2025-01\", \"North\", \"PILLOW-08\", 118, 25, 36580},\n{\"2025-01\", \"West\", \"BAG-01\", 256, 22, 158720},\n{\"2025-01\", \"West\", \"BAG-02\", 179, 23, 84130},\n{\"2025-01\", \"West\", \"CABLE-03\", 220, 38, 26400},\n{\"2025-01\", \"West\", \"HUB-04\", 86, 26, 30100},\n{\"2025-01\", \"West\", \"BOTTLE-05\", 131, 37, 23580},\n{\"2025-01\", \"West\", \"LAMP-06\", 119, 33, 64260},\n{\"2025-01\", \"West\", \"CASE-07\", 95, 23, 20900},\n{\"2025-01\", \"West\", \"PILLOW-08\", 291, 46, 90210},\n{\"2025-01\", \"South\", \"BAG-01\", 287, 23, 177940},\n{\"2025-01\", \"South\", \"BAG-02\", 84, 21, 39480},\n{\"2025-01\", \"South\", \"CABLE-03\", 249, 40, 29880},\n{\"2025-01\", \"South\", \"HUB-04\", 225, 33, 78750},\n{\"2025-01\", \"South\", \"BOTTLE-05\", 278, 45, 50040},\n{\"2025-01\", \"South\", \"LAMP-06\", 48, 44, 25920},\n{\"2025-01\", \"South\", \"CASE-07\", 98, 31, 21560},\n{\"2025-01\", \"South\", \"PILLOW-08\", 198, 28, 61380},\n{\"2025-01\", \"East\", \"BAG-01\", 167, 41, 103540},\n{\"2025-01\", \"East\", \"BAG-02\", 151, 30, 70970},\n{\"2025-01\", \"East\", \"CABLE-03\", 294, 38, 35280},\n{\"2025-01\", \"East\", \"HUB-04\", 297, 44, 103950},\n{\"2025-01\", \"East\", \"BOTTLE-05\", 193, 20, 34740},\n{\"2025-01\", \"East\", \"LAMP-06\", 143, 43, 77220},\n{\"2025-01\", \"East\", \"CASE-07\", 134, 43, 29480},\n{\"2025-01\", \"East\", \"PILLOW-08\", 113, 46, 35030},\n{\"2025-02\", \"North\", \"BAG-01\", 239, 20, 148180},\n{\"2025-02\", \"North\", \"BAG-02\", 147, 20, 69090},\n{\"2025-02\", \"North\", \"CABLE-03\", 122, 25, 14640},\n{\"2025-02\", \"North\", \"HUB-04\", 106, 31, 37100},\n{\"2025-02\", \"North\", \"BOTTLE-05\", 207, 38, 37260},\n{\"2025-02\", \"North\", \"LAMP-06\", 185, 40, 99900},\n{\"2025-02\", \"North\", \"CASE-07\", 212, 42, 46640},\n{\"2025-02\", \"North\", \"PILLOW-08\", 130, 20, 40300},\n{\"2025-02\", \"West\", \"BAG-01\", 106, 28, 65720},\n{\"2025-02\", \"West\", \"BAG-02\", 82, 20, 38540},\n{\"2025-02\", \"West\", \"CABLE-03\", 219, 36, 26280},\n{\"2025-02\", \"West\", \"HUB-04\", 280, 20, 98000},\n{\"2025-02\", \"West\", \"BOTTLE-05\", 290, 40, 52200},\n{\"2025-02\", \"West\", \"LAMP-06\", 80, 20, 43200},\n{\"2025-02\", \"West\", \"CASE-07\", 237, 45, 52140},\n{\"2025-02\", \"West\", \"PILLOW-08\", 214, 22, 66340},\n{\"2025-02\", \"South\", \"BAG-01\", 157, 34, 97340},\n{\"2025-02\", \"South\", \"BAG-02\", 295, 40, 138650},\n{\"2025-02\", \"South\", \"CABLE-03\", 134, 44, 16080},\n{\"2025-02\", \"South\", \"HUB-04\", 130, 46, 45500},\n{\"2025-02\", \"South\", \"BOTTLE-05\", 294, 31, 52920},\n{\"2025-02\", \"South\", \"LAMP-06\", 41, 25, 22140},\n{\"2025-02\", \"South\", \"CASE-07\", 149, 20, 32780},\n{\"2025-02\", \"South\", \"PILLOW-08\", 191, 24, 59210},\n{\"2025-02\", \"East\", \"BAG-01\", 205, 34, 127100},\n{\"2025-02\", \"East\", \"BAG-02\", 213, 28, 100110},\n{\"2025-02\", \"East\", \"CABLE-03\", 260, 28, 31200},\n{\"2025-02\", \"East\", \"HUB-04\", 199, 20, 69650},\n{\"2025-02\", \"East\", \"BOTTLE-05\", 261, 47, 46980},\n{\"2025-02\", \"East\", \"LAMP-06\", 58, 31, 31320},\n{\"2025-02\", \"East\", \"CASE-07\", 155, 38, 34100},\n{\"2025-02\", \"East\", \"PILLOW-08\", 144, 48, 44640},\n{\"2025-03\", \"North\", \"BAG-01\", 215, 23, 133300},\n{\"2025-03\", \"North\", \"BAG-02\", 231, 27, 108570},\n{\"2025-03\", \"North\", \"CABLE-03\", 230, 41, 27600},\n{\"2025-03\", \"North\", \"HUB-04\", 224, 20, 78400},\n{\"2025-03\", \"North\", \"BOTTLE-05\", 112, 20, 20160},\n{\"2025-03\", \"North\", \"LAMP-06\", 254, 37, 137160},\n{\"2025-03\", \"North\", \"CASE-07\", 265, 26, 58300},\n{\"2025-03\", \"North\", \"PILLOW-08\", 295, 26, 91450},\n{\"2025-03\", \"West\", \"BAG-01\", 187, 33, 115940},\n{\"2025-03\", \"West\", \"BAG-02\", 153, 46, 71910},\n{\"2025-03\", \"West\", \"CABLE-03\", 209, 20, 25080},\n{\"2025-03\", \"West\", \"HUB-04\", 239, 20, 83650},\n{\"2025-03\", \"West\", \"BOTTLE-05\", 117, 42, 21060},\n{\"2025-03\", \"West\", \"LAMP-06\", 281, 26, 151740},\n{\"2025-03\", \"West\", \"CASE-07\", 113, 49, 24860},\n{\"2025-03\", \"West\", \"PILLOW-08\", 283, 47, 87730},\n{\"2025-03\", \"South\", \"BAG-01\", 43, 41, 26660},\n{\"2025-03\", \"South\", \"BAG-02\", 116, 20, 54520},\n{\"2025-03\", \"South\", \"CABLE-03\", 83, 20, 9960},\n{\"2025-03\", \"South\", \"HUB-04\", 86, 24, 30100},\n{\"2025-03\", \"South\", \"BOTTLE-05\", 273, 29, 49140},\n{\"2025-03\", \"South\", \"LAMP-06\", 240, 20, 129600},\n{\"2025-03\", \"South\", \"CASE-07\", 146, 41, 32120},\n{\"2025-03\", \"South\", \"PILLOW-08\", 223, 35, 69130},\n{\"2025-03\", \"East\", \"BAG-01\", 294, 35, 182280},\n{\"2025-03\", \"East\", \"BAG-02\", 48, 20, 22560},\n{\"2025-03\", \"East\", \"CABLE-03\", 45, 34, 5400},\n{\"2025-03\", \"East\", \"HUB-04\", 254, 20, 88900},\n{\"2025-03\", \"East\", \"BOTTLE-05\", 97, 33, 17460},\n{\"2025-03\", \"East\", \"LAMP-06\", 252, 32, 136080},\n{\"2025-03\", \"East\", \"CASE-07\", 45, 43, 9900},\n{\"2025-03\", \"East\", \"PILLOW-08\", 136, 39, 42160},\n{\"2025-04\", \"North\", \"BAG-01\", 102, 20, 63240},\n{\"2025-04\", \"North\", \"BAG-02\", 143, 26, 67210},\n{\"2025-04\", \"North\", \"CABLE-03\", 139, 47, 16680},\n{\"2025-04\", \"North\", \"HUB-04\", 78, 44, 27300},\n{\"2025-04\", \"North\", \"BOTTLE-05\", 250, 37, 45000},\n{\"2025-04\", \"North\", \"LAMP-06\", 263, 28, 142020},\n{\"2025-04\", \"North\", \"CASE-07\", 194, 49, 42680},\n{\"2025-04\", \"North\", \"PILLOW-08\", 75, 32, 23250},\n{\"2025-04\", \"West\", \"BAG-01\", 168, 50, 104160},\n{\"2025-04\", \"West\", \"BAG-02\", 262, 34, 123140},\n{\"2025-04\", \"West\", \"CABLE-03\", 251, 38, 30120},\n{\"2025-04\", \"West\", \"HUB-04\", 170, 49, 59500},\n{\"2025-04\", \"West\", \"BOTTLE-05\", 259, 32, 46620},\n{\"2025-04\", \"West\", \"LAMP-06\", 295, 34, 159300},\n{\"2025-04\", \"West\", \"CASE-07\", 94, 22, 20680},\n{\"2025-04\", \"West\", \"PILLOW-08\", 95, 37, 29450},\n{\"2025-04\", \"South\", \"BAG-01\", 150, 42, 93000},\n{\"2025-04\", \"South\", \"BAG-02\", 179, 20, 84130},\n{\"2025-04\", \"South\", \"CABLE-03\", 169, 24, 20280},\n{\"2025-04\", \"South\", \"HUB-04\", 99, 43, 34650},\n{\"2025-04\", \"South\", \"BOTTLE-05\", 271, 20, 48780},\n{\"2025-04\", \"South\", \"LAMP-06\", 257, 22, 138780},\n{\"2025-04\", \"South\", \"CASE-07\", 160, 20, 35200},\n{\"2025-04\", \"South\", \"PILLOW-08\", 214, 22, 66340},\n{\"2025-04\", \"East\", \"BAG-01\", 197, 36, 122140},\n{\"2025-04\", \"East\", \"BAG-02\", 146, 30, 68620},\n{\"2025-04\", \"East\", \"CABLE-03\", 13, 40, 1560},\n{\"2025-04\", \"East\", \"HUB-04\", 3, 48, 1050},\n{\"2025-04\", \"East\", \"BOTTLE-05\", 263, 50, 47340},\n{\"2025-04\", \"East\", \"LAMP-06\", 46, 41, 24840},\n{\"2025-04\", \"East\", \"CASE-07\", 6, 37, 1320},\n{\"2025-04\", \"East\", \"PILLOW-08\", 201, 45, 62310},\n{\"2025-05\", \"North\", \"BAG-01\", 222, 23, 137640},\n{\"2025-05\", \"North\", \"BAG-02\", 124, 34, 58280},\n{\"2025-05\", \"North\", \"CABLE-03\", 198, 30, 23760},\n{\"2025-05\", \"North\", \"HUB-04\", 215, 24, 75250},\n{\"2025-05\", \"North\", \"BOTTLE-05\", 211, 24, 37980},\n{\"2025-05\", \"North\", \"LAMP-06\", 133, 24, 71820},\n{\"2025-05\", \"North\", \"CASE-07\", 266, 20, 58520},\n{\"2025-05\", \"North\", \"PILLOW-08\", 154, 22, 47740},\n{\"2025-05\", \"West\", \"BAG-01\", 207, 20, 128340},\n{\"2025-05\", \"West\", \"BAG-02\", 115, 23, 54050},\n{\"2025-05\", \"West\", \"CABLE-03\", 225, 23, 27000},\n{\"2025-05\", \"West\", \"HUB-04\", 80, 33, 28000},\n{\"2025-05\", \"West\", \"BOTTLE-05\", 181, 20, 32580},\n{\"2025-05\", \"West\", \"LAMP-06\", 181, 46, 97740},\n{\"2025-05\", \"West\", \"CASE-07\", 237, 20, 52140},\n{\"2025-05\", \"West\", \"PILLOW-08\", 119, 24, 36890},\n{\"2025-05\", \"South\", \"BAG-01\", 176, 44, 109120},\n{\"2025-05\", \"South\", \"BAG-02\", 133, 20, 62510},\n{\"2025-05\", \"South\", \"CABLE-03\", 79, 20, 9480},\n{\"2025-05\", \"South\", \"HUB-04\", 110, 45, 38500},\n{\"2025-05\", \"South\", \"BOTTLE-05\", 113, 30, 20340},\n{\"2025-05\", \"South\", \"LAMP-06\", 174, 33, 93960},\n{\"2025-05\", \"South\", \"CASE-07\", 250, 30, 55000},\n{\"2025-05\", \"South\", \"PILLOW-08\", 155, 30, 48050},\n{\"2025-05\", \"East\", \"BAG-01\", 112, 26, 69440},\n{\"2025-05\", \"East\", \"BAG-02\", 149, 47, 70030},\n{\"2025-05\", \"East\", \"CABLE-03\", 9, 36, 1080},\n{\"2025-05\", \"East\", \"HUB-04\", 9, 45, 3150},\n{\"2025-05\", \"East\", \"BOTTLE-05\", 128, 21, 23040},\n{\"2025-05\", \"East\", \"LAMP-06\", 115, 30, 62100},\n{\"2025-05\", \"East\", \"CASE-07\", 1, 31, 220},\n{\"2025-05\", \"East\", \"PILLOW-08\", 60, 31, 18600},\n{\"2025-06\", \"North\", \"BAG-01\", 249, 39, 154380},\n{\"2025-06\", \"North\", \"BAG-02\", 54, 26, 25380},\n{\"2025-06\", \"North\", \"CABLE-03\", 78, 43, 9360},\n{\"2025-06\", \"North\", \"HUB-04\", 264, 36, 92400},\n{\"2025-06\", \"North\", \"BOTTLE-05\", 146, 21, 26280},\n{\"2025-06\", \"North\", \"LAMP-06\", 145, 40, 78300},\n{\"2025-06\", \"North\", \"CASE-07\", 156, 32, 34320},\n{\"2025-06\", \"North\", \"PILLOW-08\", 130, 20, 40300},\n{\"2025-06\", \"West\", \"BAG-01\", 220, 32, 136400},\n{\"2025-06\", \"West\", \"BAG-02\", 273, 50, 128310},\n{\"2025-06\", \"West\", \"CABLE-03\", 203, 38, 24360},\n{\"2025-06\", \"West\", \"HUB-04\", 217, 49, 75950},\n{\"2025-06\", \"West\", \"BOTTLE-05\", 64, 30, 11520},\n{\"2025-06\", \"West\", \"LAMP-06\", 49, 27, 26460},\n{\"2025-06\", \"West\", \"CASE-07\", 79, 24, 17380},\n{\"2025-06\", \"West\", \"PILLOW-08\", 231, 22, 71610},\n{\"2025-06\", \"South\", \"BAG-01\", 287, 20, 177940},\n{\"2025-06\", \"South\", \"BAG-02\", 291, 23, 136770},\n{\"2025-06\", \"South\", \"CABLE-03\", 61, 38, 7320},\n{\"2025-06\", \"South\", \"HUB-04\", 267, 30, 93450},\n{\"2025-06\", \"South\", \"BOTTLE-05\", 235, 36, 42300},\n{\"2025-06\", \"South\", \"LAMP-06\", 217, 21, 117180},\n{\"2025-06\", \"South\", \"CASE-07\", 228, 38, 50160},\n{\"2025-06\", \"South\", \"PILLOW-08\", 85, 20, 26350},\n{\"2025-06\", \"East\", \"BAG-01\", 286, 21, 177320},\n{\"2025-06\", \"East\", \"BAG-02\", 205, 20, 96350},\n{\"2025-06\", \"East\", \"CABLE-03\", 8, 50, 960},\n{\"2025-06\", \"East\", \"HUB-04\", 2, 46, 700},\n{\"2025-06\", \"East\", \"BOTTLE-05\", 161, 44, 28980},\n{\"2025-06\", \"East\", \"LAMP-06\", 279, 20, 150660},\n{\"2025-06\", \"East\", \"CASE-07\", 8, 28, 1760},\n{\"2025-06\", \"East\", \"PILLOW-08\", 216, 45, 66960}\n})"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Demand",
+        "columns": [
+          {
+            "name": "Month",
+            "sourceColumn": "Month",
+            "dataType": "string",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Region",
+            "sourceColumn": "Region",
+            "dataType": "string",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "SKU",
+            "sourceColumn": "SKU",
+            "dataType": "string",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Ordered Units",
+            "sourceColumn": "Ordered Units",
+            "dataType": "int64",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Filled Units",
+            "sourceColumn": "Filled Units",
+            "dataType": "int64",
+            "summarizeBy": "none"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Unit Fill Rate",
+            "expression": "DIVIDE(SUM(Demand[Filled Units]), SUM(Demand[Ordered Units]))",
+            "formatString": "0.0%"
+          },
+          {
+            "name": "Unfilled Units",
+            "expression": "SUM(Demand[Ordered Units]) - SUM(Demand[Filled Units])",
+            "formatString": "#,0"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Demand",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": "#table(type table [#\"Month\" = text, #\"Region\" = text, #\"SKU\" = text, #\"Ordered Units\" = Int64.Type, #\"Filled Units\" = Int64.Type], {\n{\"2025-01\", \"North\", \"BAG-01\", 145, 145},\n{\"2025-01\", \"North\", \"BAG-02\", 360, 360},\n{\"2025-01\", \"North\", \"CABLE-03\", 262, 240},\n{\"2025-01\", \"North\", \"HUB-04\", 225, 225},\n{\"2025-01\", \"North\", \"BOTTLE-05\", 348, 348},\n{\"2025-01\", \"North\", \"LAMP-06\", 126, 126},\n{\"2025-01\", \"North\", \"CASE-07\", 170, 161},\n{\"2025-01\", \"North\", \"PILLOW-08\", 249, 249},\n{\"2025-01\", \"West\", \"BAG-01\", 215, 215},\n{\"2025-01\", \"West\", \"BAG-02\", 230, 230},\n{\"2025-01\", \"West\", \"CABLE-03\", 381, 355},\n{\"2025-01\", \"West\", \"HUB-04\", 255, 255},\n{\"2025-01\", \"West\", \"BOTTLE-05\", 368, 341},\n{\"2025-01\", \"West\", \"LAMP-06\", 333, 333},\n{\"2025-01\", \"West\", \"CASE-07\", 233, 233},\n{\"2025-01\", \"West\", \"PILLOW-08\", 460, 451},\n{\"2025-01\", \"South\", \"BAG-01\", 233, 233},\n{\"2025-01\", \"South\", \"BAG-02\", 212, 200},\n{\"2025-01\", \"South\", \"CABLE-03\", 396, 396},\n{\"2025-01\", \"South\", \"HUB-04\", 327, 327},\n{\"2025-01\", \"South\", \"BOTTLE-05\", 447, 447},\n{\"2025-01\", \"South\", \"LAMP-06\", 437, 437},\n{\"2025-01\", \"South\", \"CASE-07\", 312, 312},\n{\"2025-01\", \"South\", \"PILLOW-08\", 280, 257},\n{\"2025-01\", \"East\", \"BAG-01\", 410, 389},\n{\"2025-01\", \"East\", \"BAG-02\", 295, 295},\n{\"2025-01\", \"East\", \"CABLE-03\", 385, 364},\n{\"2025-01\", \"East\", \"HUB-04\", 438, 430},\n{\"2025-01\", \"East\", \"BOTTLE-05\", 200, 200},\n{\"2025-01\", \"East\", \"LAMP-06\", 433, 426},\n{\"2025-01\", \"East\", \"CASE-07\", 428, 406},\n{\"2025-01\", \"East\", \"PILLOW-08\", 456, 456},\n{\"2025-02\", \"North\", \"BAG-01\", 159, 159},\n{\"2025-02\", \"North\", \"BAG-02\", 202, 202},\n{\"2025-02\", \"North\", \"CABLE-03\", 251, 232},\n{\"2025-02\", \"North\", \"HUB-04\", 309, 309},\n{\"2025-02\", \"North\", \"BOTTLE-05\", 381, 356},\n{\"2025-02\", \"North\", \"LAMP-06\", 403, 403},\n{\"2025-02\", \"North\", \"CASE-07\", 423, 423},\n{\"2025-02\", \"North\", \"PILLOW-08\", 152, 152},\n{\"2025-02\", \"West\", \"BAG-01\", 280, 280},\n{\"2025-02\", \"West\", \"BAG-02\", 164, 137},\n{\"2025-02\", \"West\", \"CABLE-03\", 358, 358},\n{\"2025-02\", \"West\", \"HUB-04\", 192, 171},\n{\"2025-02\", \"West\", \"BOTTLE-05\", 401, 378},\n{\"2025-02\", \"West\", \"LAMP-06\", 155, 152},\n{\"2025-02\", \"West\", \"CASE-07\", 449, 430},\n{\"2025-02\", \"West\", \"PILLOW-08\", 219, 219},\n{\"2025-02\", \"South\", \"BAG-01\", 337, 337},\n{\"2025-02\", \"South\", \"BAG-02\", 401, 401},\n{\"2025-02\", \"South\", \"CABLE-03\", 445, 445},\n{\"2025-02\", \"South\", \"HUB-04\", 457, 457},\n{\"2025-02\", \"South\", \"BOTTLE-05\", 312, 312},\n{\"2025-02\", \"South\", \"LAMP-06\", 247, 247},\n{\"2025-02\", \"South\", \"CASE-07\", 178, 178},\n{\"2025-02\", \"South\", \"PILLOW-08\", 240, 240},\n{\"2025-02\", \"East\", \"BAG-01\", 344, 344},\n{\"2025-02\", \"East\", \"BAG-02\", 283, 283},\n{\"2025-02\", \"East\", \"CABLE-03\", 282, 282},\n{\"2025-02\", \"East\", \"HUB-04\", 172, 172},\n{\"2025-02\", \"East\", \"BOTTLE-05\", 468, 468},\n{\"2025-02\", \"East\", \"LAMP-06\", 314, 314},\n{\"2025-02\", \"East\", \"CASE-07\", 384, 384},\n{\"2025-02\", \"East\", \"PILLOW-08\", 475, 453},\n{\"2025-03\", \"North\", \"BAG-01\", 232, 232},\n{\"2025-03\", \"North\", \"BAG-02\", 272, 248},\n{\"2025-03\", \"North\", \"CABLE-03\", 411, 404},\n{\"2025-03\", \"North\", \"HUB-04\", 172, 148},\n{\"2025-03\", \"North\", \"BOTTLE-05\", 186, 186},\n{\"2025-03\", \"North\", \"LAMP-06\", 366, 366},\n{\"2025-03\", \"North\", \"CASE-07\", 258, 252},\n{\"2025-03\", \"North\", \"PILLOW-08\", 259, 259},\n{\"2025-03\", \"West\", \"BAG-01\", 330, 311},\n{\"2025-03\", \"West\", \"BAG-02\", 463, 463},\n{\"2025-03\", \"West\", \"CABLE-03\", 139, 139},\n{\"2025-03\", \"West\", \"HUB-04\", 152, 152},\n{\"2025-03\", \"West\", \"BOTTLE-05\", 424, 424},\n{\"2025-03\", \"West\", \"LAMP-06\", 264, 264},\n{\"2025-03\", \"West\", \"CASE-07\", 487, 487},\n{\"2025-03\", \"West\", \"PILLOW-08\", 471, 471},\n{\"2025-03\", \"South\", \"BAG-01\", 408, 408},\n{\"2025-03\", \"South\", \"BAG-02\", 174, 174},\n{\"2025-03\", \"South\", \"CABLE-03\", 184, 184},\n{\"2025-03\", \"South\", \"HUB-04\", 245, 225},\n{\"2025-03\", \"South\", \"BOTTLE-05\", 292, 274},\n{\"2025-03\", \"South\", \"LAMP-06\", 152, 152},\n{\"2025-03\", \"South\", \"CASE-07\", 409, 409},\n{\"2025-03\", \"South\", \"PILLOW-08\", 348, 348},\n{\"2025-03\", \"East\", \"BAG-01\", 348, 348},\n{\"2025-03\", \"East\", \"BAG-02\", 149, 149},\n{\"2025-03\", \"East\", \"CABLE-03\", 338, 338},\n{\"2025-03\", \"East\", \"HUB-04\", 179, 179},\n{\"2025-03\", \"East\", \"BOTTLE-05\", 333, 333},\n{\"2025-03\", \"East\", \"LAMP-06\", 318, 318},\n{\"2025-03\", \"East\", \"CASE-07\", 434, 434},\n{\"2025-03\", \"East\", \"PILLOW-08\", 394, 377},\n{\"2025-04\", \"North\", \"BAG-01\", 149, 149},\n{\"2025-04\", \"North\", \"BAG-02\", 260, 260},\n{\"2025-04\", \"North\", \"CABLE-03\", 472, 472},\n{\"2025-04\", \"North\", \"HUB-04\", 437, 437},\n{\"2025-04\", \"North\", \"BOTTLE-05\", 368, 368},\n{\"2025-04\", \"North\", \"LAMP-06\", 280, 280},\n{\"2025-04\", \"North\", \"CASE-07\", 492, 492},\n{\"2025-04\", \"North\", \"PILLOW-08\", 318, 318},\n{\"2025-04\", \"West\", \"BAG-01\", 497, 497},\n{\"2025-04\", \"West\", \"BAG-02\", 343, 343},\n{\"2025-04\", \"West\", \"CABLE-03\", 383, 366},\n{\"2025-04\", \"West\", \"HUB-04\", 489, 489},\n{\"2025-04\", \"West\", \"BOTTLE-05\", 316, 316},\n{\"2025-04\", \"West\", \"LAMP-06\", 336, 336},\n{\"2025-04\", \"West\", \"CASE-07\", 219, 216},\n{\"2025-04\", \"West\", \"PILLOW-08\", 370, 370},\n{\"2025-04\", \"South\", \"BAG-01\", 415, 394},\n{\"2025-04\", \"South\", \"BAG-02\", 166, 166},\n{\"2025-04\", \"South\", \"CABLE-03\", 239, 239},\n{\"2025-04\", \"South\", \"HUB-04\", 429, 429},\n{\"2025-04\", \"South\", \"BOTTLE-05\", 155, 151},\n{\"2025-04\", \"South\", \"LAMP-06\", 223, 223},\n{\"2025-04\", \"South\", \"CASE-07\", 187, 187},\n{\"2025-04\", \"South\", \"PILLOW-08\", 219, 212},\n{\"2025-04\", \"East\", \"BAG-01\", 364, 364},\n{\"2025-04\", \"East\", \"BAG-02\", 300, 300},\n{\"2025-04\", \"East\", \"CABLE-03\", 400, 359},\n{\"2025-04\", \"East\", \"HUB-04\", 485, 450},\n{\"2025-04\", \"East\", \"BOTTLE-05\", 497, 497},\n{\"2025-04\", \"East\", \"LAMP-06\", 409, 391},\n{\"2025-04\", \"East\", \"CASE-07\", 374, 332},\n{\"2025-04\", \"East\", \"PILLOW-08\", 451, 451},\n{\"2025-05\", \"North\", \"BAG-01\", 226, 226},\n{\"2025-05\", \"North\", \"BAG-02\", 342, 325},\n{\"2025-05\", \"North\", \"CABLE-03\", 304, 304},\n{\"2025-05\", \"North\", \"HUB-04\", 244, 244},\n{\"2025-05\", \"North\", \"BOTTLE-05\", 244, 244},\n{\"2025-05\", \"North\", \"LAMP-06\", 240, 240},\n{\"2025-05\", \"North\", \"CASE-07\", 190, 190},\n{\"2025-05\", \"North\", \"PILLOW-08\", 221, 221},\n{\"2025-05\", \"West\", \"BAG-01\", 160, 160},\n{\"2025-05\", \"West\", \"BAG-02\", 229, 229},\n{\"2025-05\", \"West\", \"CABLE-03\", 226, 226},\n{\"2025-05\", \"West\", \"HUB-04\", 326, 326},\n{\"2025-05\", \"West\", \"BOTTLE-05\", 179, 179},\n{\"2025-05\", \"West\", \"LAMP-06\", 465, 465},\n{\"2025-05\", \"West\", \"CASE-07\", 173, 148},\n{\"2025-05\", \"West\", \"PILLOW-08\", 236, 236},\n{\"2025-05\", \"South\", \"BAG-01\", 438, 438},\n{\"2025-05\", \"South\", \"BAG-02\", 172, 172},\n{\"2025-05\", \"South\", \"CABLE-03\", 165, 153},\n{\"2025-05\", \"South\", \"HUB-04\", 446, 420},\n{\"2025-05\", \"South\", \"BOTTLE-05\", 305, 305},\n{\"2025-05\", \"South\", \"LAMP-06\", 334, 334},\n{\"2025-05\", \"South\", \"CASE-07\", 303, 303},\n{\"2025-05\", \"South\", \"PILLOW-08\", 298, 286},\n{\"2025-05\", \"East\", \"BAG-01\", 255, 255},\n{\"2025-05\", \"East\", \"BAG-02\", 470, 470},\n{\"2025-05\", \"East\", \"CABLE-03\", 362, 331},\n{\"2025-05\", \"East\", \"HUB-04\", 453, 425},\n{\"2025-05\", \"East\", \"BOTTLE-05\", 206, 188},\n{\"2025-05\", \"East\", \"LAMP-06\", 304, 304},\n{\"2025-05\", \"East\", \"CASE-07\", 307, 246},\n{\"2025-05\", \"East\", \"PILLOW-08\", 311, 285},\n{\"2025-06\", \"North\", \"BAG-01\", 388, 388},\n{\"2025-06\", \"North\", \"BAG-02\", 257, 252},\n{\"2025-06\", \"North\", \"CABLE-03\", 429, 429},\n{\"2025-06\", \"North\", \"HUB-04\", 356, 356},\n{\"2025-06\", \"North\", \"BOTTLE-05\", 209, 209},\n{\"2025-06\", \"North\", \"LAMP-06\", 398, 398},\n{\"2025-06\", \"North\", \"CASE-07\", 317, 317},\n{\"2025-06\", \"North\", \"PILLOW-08\", 205, 205},\n{\"2025-06\", \"West\", \"BAG-01\", 325, 316},\n{\"2025-06\", \"West\", \"BAG-02\", 502, 502},\n{\"2025-06\", \"West\", \"CABLE-03\", 383, 383},\n{\"2025-06\", \"West\", \"HUB-04\", 493, 493},\n{\"2025-06\", \"West\", \"BOTTLE-05\", 301, 301},\n{\"2025-06\", \"West\", \"LAMP-06\", 272, 272},\n{\"2025-06\", \"West\", \"CASE-07\", 242, 242},\n{\"2025-06\", \"West\", \"PILLOW-08\", 215, 215},\n{\"2025-06\", \"South\", \"BAG-01\", 179, 179},\n{\"2025-06\", \"South\", \"BAG-02\", 227, 227},\n{\"2025-06\", \"South\", \"CABLE-03\", 376, 361},\n{\"2025-06\", \"South\", \"HUB-04\", 297, 297},\n{\"2025-06\", \"South\", \"BOTTLE-05\", 361, 356},\n{\"2025-06\", \"South\", \"LAMP-06\", 208, 208},\n{\"2025-06\", \"South\", \"CASE-07\", 379, 379},\n{\"2025-06\", \"South\", \"PILLOW-08\", 205, 205},\n{\"2025-06\", \"East\", \"BAG-01\", 206, 206},\n{\"2025-06\", \"East\", \"BAG-02\", 176, 176},\n{\"2025-06\", \"East\", \"CABLE-03\", 495, 456},\n{\"2025-06\", \"East\", \"HUB-04\", 457, 422},\n{\"2025-06\", \"East\", \"BOTTLE-05\", 442, 442},\n{\"2025-06\", \"East\", \"LAMP-06\", 183, 179},\n{\"2025-06\", \"East\", \"CASE-07\", 278, 233},\n{\"2025-06\", \"East\", \"PILLOW-08\", 450, 450}\n})"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Receipts",
+        "columns": [
+          {
+            "name": "Month",
+            "sourceColumn": "Month",
+            "dataType": "string",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Region",
+            "sourceColumn": "Region",
+            "dataType": "string",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "SKU",
+            "sourceColumn": "SKU",
+            "dataType": "string",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Supplier",
+            "sourceColumn": "Supplier",
+            "dataType": "string",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "PO Units",
+            "sourceColumn": "PO Units",
+            "dataType": "int64",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Received Units",
+            "sourceColumn": "Received Units",
+            "dataType": "int64",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Late",
+            "sourceColumn": "Late",
+            "dataType": "int64",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "OTIF",
+            "sourceColumn": "OTIF",
+            "dataType": "int64",
+            "summarizeBy": "none"
+          }
+        ],
+        "measures": [
+          {
+            "name": "PO Lines",
+            "expression": "COUNTROWS(Receipts)",
+            "formatString": "#,0"
+          },
+          {
+            "name": "Late PO Lines",
+            "expression": "SUM(Receipts[Late])",
+            "formatString": "#,0"
+          },
+          {
+            "name": "Supplier OTIF",
+            "expression": "DIVIDE(SUM(Receipts[OTIF]), [PO Lines])",
+            "formatString": "0.0%"
+          },
+          {
+            "name": "Short Receipt Units",
+            "expression": "SUM(Receipts[PO Units]) - SUM(Receipts[Received Units])",
+            "formatString": "#,0"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Receipts",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": "#table(type table [#\"Month\" = text, #\"Region\" = text, #\"SKU\" = text, #\"Supplier\" = text, #\"PO Units\" = Int64.Type, #\"Received Units\" = Int64.Type, #\"Late\" = Int64.Type, #\"OTIF\" = Int64.Type], {\n{\"2025-01\", \"North\", \"BAG-01\", \"Meridian Components\", 52, 37, 0, 0},\n{\"2025-01\", \"North\", \"BAG-01\", \"Meridian Components\", 56, 56, 0, 1},\n{\"2025-01\", \"North\", \"BAG-01\", \"Meridian Components\", 61, 61, 0, 1},\n{\"2025-01\", \"North\", \"BAG-02\", \"Harbor Goods\", 130, 130, 0, 1},\n{\"2025-01\", \"North\", \"BAG-02\", \"Harbor Goods\", 120, 120, 0, 1},\n{\"2025-01\", \"North\", \"BAG-02\", \"Harbor Goods\", 128, 128, 0, 1},\n{\"2025-01\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 93, 93, 0, 1},\n{\"2025-01\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 95, 95, 0, 1},\n{\"2025-01\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 87, 87, 0, 1},\n{\"2025-01\", \"North\", \"HUB-04\", \"Meridian Components\", 86, 80, 1, 0},\n{\"2025-01\", \"North\", \"HUB-04\", \"Meridian Components\", 90, 90, 1, 0},\n{\"2025-01\", \"North\", \"HUB-04\", \"Meridian Components\", 75, 75, 0, 1},\n{\"2025-01\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 117, 117, 0, 1},\n{\"2025-01\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 126, 122, 0, 0},\n{\"2025-01\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 128, 128, 0, 1},\n{\"2025-01\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 51, 51, 0, 1},\n{\"2025-01\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 50, 50, 0, 1},\n{\"2025-01\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 51, 51, 0, 1},\n{\"2025-01\", \"North\", \"CASE-07\", \"Meridian Components\", 71, 71, 0, 1},\n{\"2025-01\", \"North\", \"CASE-07\", \"Meridian Components\", 70, 70, 0, 1},\n{\"2025-01\", \"North\", \"CASE-07\", \"Meridian Components\", 59, 59, 0, 1},\n{\"2025-01\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 97, 97, 0, 1},\n{\"2025-01\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 90, 90, 1, 0},\n{\"2025-01\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 92, 92, 0, 1},\n{\"2025-01\", \"West\", \"BAG-01\", \"Meridian Components\", 84, 84, 0, 1},\n{\"2025-01\", \"West\", \"BAG-01\", \"Meridian Components\", 78, 78, 0, 1},\n{\"2025-01\", \"West\", \"BAG-01\", \"Meridian Components\", 86, 86, 0, 1},\n{\"2025-01\", \"West\", \"BAG-02\", \"Harbor Goods\", 85, 85, 0, 1},\n{\"2025-01\", \"West\", \"BAG-02\", \"Harbor Goods\", 85, 85, 0, 1},\n{\"2025-01\", \"West\", \"BAG-02\", \"Harbor Goods\", 77, 77, 0, 1},\n{\"2025-01\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 129, 129, 0, 1},\n{\"2025-01\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 132, 132, 0, 1},\n{\"2025-01\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 141, 141, 1, 0},\n{\"2025-01\", \"West\", \"HUB-04\", \"Meridian Components\", 96, 96, 0, 1},\n{\"2025-01\", \"West\", \"HUB-04\", \"Meridian Components\", 94, 94, 0, 1},\n{\"2025-01\", \"West\", \"HUB-04\", \"Meridian Components\", 89, 89, 1, 0},\n{\"2025-01\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 128, 128, 1, 0},\n{\"2025-01\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 124, 124, 0, 1},\n{\"2025-01\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 127, 127, 1, 0},\n{\"2025-01\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 121, 121, 0, 1},\n{\"2025-01\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 116, 116, 0, 1},\n{\"2025-01\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 114, 114, 0, 1},\n{\"2025-01\", \"West\", \"CASE-07\", \"Meridian Components\", 91, 91, 0, 1},\n{\"2025-01\", \"West\", \"CASE-07\", \"Meridian Components\", 88, 86, 0, 0},\n{\"2025-01\", \"West\", \"CASE-07\", \"Meridian Components\", 87, 87, 0, 1},\n{\"2025-01\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 165, 165, 0, 1},\n{\"2025-01\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 157, 157, 0, 1},\n{\"2025-01\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 165, 165, 0, 1},\n{\"2025-01\", \"South\", \"BAG-01\", \"Meridian Components\", 90, 90, 0, 1},\n{\"2025-01\", \"South\", \"BAG-01\", \"Meridian Components\", 92, 92, 1, 0},\n{\"2025-01\", \"South\", \"BAG-01\", \"Meridian Components\", 89, 78, 1, 0},\n{\"2025-01\", \"South\", \"BAG-02\", \"Harbor Goods\", 78, 78, 0, 1},\n{\"2025-01\", \"South\", \"BAG-02\", \"Harbor Goods\", 71, 71, 0, 1},\n{\"2025-01\", \"South\", \"BAG-02\", \"Harbor Goods\", 84, 84, 0, 1},\n{\"2025-01\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 140, 140, 0, 1},\n{\"2025-01\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 143, 143, 0, 1},\n{\"2025-01\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 132, 132, 0, 1},\n{\"2025-01\", \"South\", \"HUB-04\", \"Meridian Components\", 112, 112, 0, 1},\n{\"2025-01\", \"South\", \"HUB-04\", \"Meridian Components\", 115, 115, 1, 0},\n{\"2025-01\", \"South\", \"HUB-04\", \"Meridian Components\", 118, 118, 0, 1},\n{\"2025-01\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 157, 157, 0, 1},\n{\"2025-01\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 159, 159, 0, 1},\n{\"2025-01\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 157, 157, 0, 1},\n{\"2025-01\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 154, 154, 1, 0},\n{\"2025-01\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 155, 155, 0, 1},\n{\"2025-01\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 155, 155, 1, 0},\n{\"2025-01\", \"South\", \"CASE-07\", \"Meridian Components\", 110, 110, 0, 1},\n{\"2025-01\", \"South\", \"CASE-07\", \"Meridian Components\", 116, 116, 0, 1},\n{\"2025-01\", \"South\", \"CASE-07\", \"Meridian Components\", 104, 104, 0, 1},\n{\"2025-01\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 108, 108, 0, 1},\n{\"2025-01\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 96, 96, 0, 1},\n{\"2025-01\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 104, 104, 0, 1},\n{\"2025-01\", \"East\", \"BAG-01\", \"Meridian Components\", 141, 141, 1, 0},\n{\"2025-01\", \"East\", \"BAG-01\", \"Meridian Components\", 140, 140, 1, 0},\n{\"2025-01\", \"East\", \"BAG-01\", \"Meridian Components\", 149, 149, 1, 0},\n{\"2025-01\", \"East\", \"BAG-02\", \"Harbor Goods\", 107, 107, 0, 1},\n{\"2025-01\", \"East\", \"BAG-02\", \"Harbor Goods\", 111, 111, 0, 1},\n{\"2025-01\", \"East\", \"BAG-02\", \"Harbor Goods\", 109, 109, 0, 1},\n{\"2025-01\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 139, 139, 0, 1},\n{\"2025-01\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 130, 130, 0, 1},\n{\"2025-01\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 130, 119, 0, 0},\n{\"2025-01\", \"East\", \"HUB-04\", \"Meridian Components\", 150, 140, 0, 0},\n{\"2025-01\", \"East\", \"HUB-04\", \"Meridian Components\", 153, 153, 0, 1},\n{\"2025-01\", \"East\", \"HUB-04\", \"Meridian Components\", 148, 142, 0, 0},\n{\"2025-01\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 80, 80, 1, 0},\n{\"2025-01\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 69, 69, 0, 1},\n{\"2025-01\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 78, 78, 1, 0},\n{\"2025-01\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 153, 153, 0, 1},\n{\"2025-01\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 153, 144, 0, 0},\n{\"2025-01\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 149, 149, 0, 1},\n{\"2025-01\", \"East\", \"CASE-07\", \"Meridian Components\", 154, 154, 1, 0},\n{\"2025-01\", \"East\", \"CASE-07\", \"Meridian Components\", 150, 150, 1, 0},\n{\"2025-01\", \"East\", \"CASE-07\", \"Meridian Components\", 145, 145, 1, 0},\n{\"2025-01\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 157, 157, 0, 1},\n{\"2025-01\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 154, 154, 0, 1},\n{\"2025-01\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 161, 161, 0, 1},\n{\"2025-02\", \"North\", \"BAG-01\", \"Meridian Components\", 63, 60, 1, 0},\n{\"2025-02\", \"North\", \"BAG-01\", \"Meridian Components\", 63, 54, 0, 0},\n{\"2025-02\", \"North\", \"BAG-01\", \"Meridian Components\", 56, 56, 0, 1},\n{\"2025-02\", \"North\", \"BAG-02\", \"Harbor Goods\", 77, 77, 0, 1},\n{\"2025-02\", \"North\", \"BAG-02\", \"Harbor Goods\", 74, 74, 1, 0},\n{\"2025-02\", \"North\", \"BAG-02\", \"Harbor Goods\", 82, 82, 0, 1},\n{\"2025-02\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 89, 89, 0, 1},\n{\"2025-02\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 84, 84, 0, 1},\n{\"2025-02\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 83, 83, 0, 1},\n{\"2025-02\", \"North\", \"HUB-04\", \"Meridian Components\", 111, 111, 0, 1},\n{\"2025-02\", \"North\", \"HUB-04\", \"Meridian Components\", 105, 105, 0, 1},\n{\"2025-02\", \"North\", \"HUB-04\", \"Meridian Components\", 109, 109, 1, 0},\n{\"2025-02\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 130, 130, 0, 1},\n{\"2025-02\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 137, 137, 0, 1},\n{\"2025-02\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 135, 135, 0, 1},\n{\"2025-02\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 147, 147, 0, 1},\n{\"2025-02\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 147, 147, 0, 1},\n{\"2025-02\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 142, 142, 1, 0},\n{\"2025-02\", \"North\", \"CASE-07\", \"Meridian Components\", 154, 154, 1, 0},\n{\"2025-02\", \"North\", \"CASE-07\", \"Meridian Components\", 148, 148, 0, 1},\n{\"2025-02\", \"North\", \"CASE-07\", \"Meridian Components\", 154, 154, 0, 1},\n{\"2025-02\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 62, 62, 1, 0},\n{\"2025-02\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 55, 55, 0, 1},\n{\"2025-02\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 63, 63, 1, 0},\n{\"2025-02\", \"West\", \"BAG-01\", \"Meridian Components\", 106, 106, 0, 1},\n{\"2025-02\", \"West\", \"BAG-01\", \"Meridian Components\", 104, 104, 0, 1},\n{\"2025-02\", \"West\", \"BAG-01\", \"Meridian Components\", 97, 97, 0, 1},\n{\"2025-02\", \"West\", \"BAG-02\", \"Harbor Goods\", 54, 54, 0, 1},\n{\"2025-02\", \"West\", \"BAG-02\", \"Harbor Goods\", 63, 63, 0, 1},\n{\"2025-02\", \"West\", \"BAG-02\", \"Harbor Goods\", 61, 61, 0, 1},\n{\"2025-02\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 124, 124, 0, 1},\n{\"2025-02\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 131, 131, 0, 1},\n{\"2025-02\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 121, 121, 1, 0},\n{\"2025-02\", \"West\", \"HUB-04\", \"Meridian Components\", 70, 70, 0, 1},\n{\"2025-02\", \"West\", \"HUB-04\", \"Meridian Components\", 71, 71, 1, 0},\n{\"2025-02\", \"West\", \"HUB-04\", \"Meridian Components\", 73, 73, 1, 0},\n{\"2025-02\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 143, 143, 0, 1},\n{\"2025-02\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 146, 146, 0, 1},\n{\"2025-02\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 133, 133, 0, 1},\n{\"2025-02\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 65, 65, 1, 0},\n{\"2025-02\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 62, 62, 0, 1},\n{\"2025-02\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 66, 51, 0, 0},\n{\"2025-02\", \"West\", \"CASE-07\", \"Meridian Components\", 154, 142, 0, 0},\n{\"2025-02\", \"West\", \"CASE-07\", \"Meridian Components\", 158, 158, 0, 1},\n{\"2025-02\", \"West\", \"CASE-07\", \"Meridian Components\", 163, 163, 1, 0},\n{\"2025-02\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 81, 81, 0, 1},\n{\"2025-02\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 83, 70, 0, 0},\n{\"2025-02\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 85, 85, 0, 1},\n{\"2025-02\", \"South\", \"BAG-01\", \"Meridian Components\", 119, 119, 1, 0},\n{\"2025-02\", \"South\", \"BAG-01\", \"Meridian Components\", 121, 121, 0, 1},\n{\"2025-02\", \"South\", \"BAG-01\", \"Meridian Components\", 118, 105, 1, 0},\n{\"2025-02\", \"South\", \"BAG-02\", \"Harbor Goods\", 139, 139, 0, 1},\n{\"2025-02\", \"South\", \"BAG-02\", \"Harbor Goods\", 145, 145, 0, 1},\n{\"2025-02\", \"South\", \"BAG-02\", \"Harbor Goods\", 137, 137, 0, 1},\n{\"2025-02\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 161, 161, 0, 1},\n{\"2025-02\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 157, 157, 1, 0},\n{\"2025-02\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 162, 162, 0, 1},\n{\"2025-02\", \"South\", \"HUB-04\", \"Meridian Components\", 159, 159, 1, 0},\n{\"2025-02\", \"South\", \"HUB-04\", \"Meridian Components\", 161, 161, 1, 0},\n{\"2025-02\", \"South\", \"HUB-04\", \"Meridian Components\", 159, 159, 1, 0},\n{\"2025-02\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 116, 109, 0, 0},\n{\"2025-02\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 106, 106, 0, 1},\n{\"2025-02\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 107, 107, 0, 1},\n{\"2025-02\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 90, 90, 0, 1},\n{\"2025-02\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 97, 97, 0, 1},\n{\"2025-02\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 95, 86, 0, 0},\n{\"2025-02\", \"South\", \"CASE-07\", \"Meridian Components\", 68, 68, 0, 1},\n{\"2025-02\", \"South\", \"CASE-07\", \"Meridian Components\", 59, 59, 0, 1},\n{\"2025-02\", \"South\", \"CASE-07\", \"Meridian Components\", 70, 70, 1, 0},\n{\"2025-02\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 95, 95, 0, 1},\n{\"2025-02\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 87, 87, 0, 1},\n{\"2025-02\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 85, 85, 0, 1},\n{\"2025-02\", \"East\", \"BAG-01\", \"Meridian Components\", 114, 114, 1, 0},\n{\"2025-02\", \"East\", \"BAG-01\", \"Meridian Components\", 126, 126, 0, 1},\n{\"2025-02\", \"East\", \"BAG-01\", \"Meridian Components\", 115, 115, 1, 0},\n{\"2025-02\", \"East\", \"BAG-02\", \"Harbor Goods\", 97, 97, 0, 1},\n{\"2025-02\", \"East\", \"BAG-02\", \"Harbor Goods\", 106, 106, 0, 1},\n{\"2025-02\", \"East\", \"BAG-02\", \"Harbor Goods\", 107, 107, 0, 1},\n{\"2025-02\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 109, 109, 0, 1},\n{\"2025-02\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 108, 108, 0, 1},\n{\"2025-02\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 106, 106, 0, 1},\n{\"2025-02\", \"East\", \"HUB-04\", \"Meridian Components\", 64, 64, 0, 1},\n{\"2025-02\", \"East\", \"HUB-04\", \"Meridian Components\", 58, 58, 0, 1},\n{\"2025-02\", \"East\", \"HUB-04\", \"Meridian Components\", 63, 63, 0, 1},\n{\"2025-02\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 166, 166, 0, 1},\n{\"2025-02\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 167, 167, 0, 1},\n{\"2025-02\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 157, 157, 0, 1},\n{\"2025-02\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 118, 118, 0, 1},\n{\"2025-02\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 110, 110, 0, 1},\n{\"2025-02\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 106, 106, 0, 1},\n{\"2025-02\", \"East\", \"CASE-07\", \"Meridian Components\", 138, 138, 0, 1},\n{\"2025-02\", \"East\", \"CASE-07\", \"Meridian Components\", 137, 124, 0, 0},\n{\"2025-02\", \"East\", \"CASE-07\", \"Meridian Components\", 140, 126, 0, 0},\n{\"2025-02\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 164, 164, 0, 1},\n{\"2025-02\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 168, 168, 0, 1},\n{\"2025-02\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 158, 158, 0, 1},\n{\"2025-03\", \"North\", \"BAG-01\", \"Meridian Components\", 87, 83, 1, 0},\n{\"2025-03\", \"North\", \"BAG-01\", \"Meridian Components\", 88, 88, 0, 1},\n{\"2025-03\", \"North\", \"BAG-01\", \"Meridian Components\", 92, 81, 1, 0},\n{\"2025-03\", \"North\", \"BAG-02\", \"Harbor Goods\", 90, 90, 1, 0},\n{\"2025-03\", \"North\", \"BAG-02\", \"Harbor Goods\", 99, 99, 0, 1},\n{\"2025-03\", \"North\", \"BAG-02\", \"Harbor Goods\", 91, 91, 1, 0},\n{\"2025-03\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 138, 138, 0, 1},\n{\"2025-03\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 142, 142, 0, 1},\n{\"2025-03\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 138, 138, 1, 0},\n{\"2025-03\", \"North\", \"HUB-04\", \"Meridian Components\", 60, 60, 0, 1},\n{\"2025-03\", \"North\", \"HUB-04\", \"Meridian Components\", 62, 62, 0, 1},\n{\"2025-03\", \"North\", \"HUB-04\", \"Meridian Components\", 63, 63, 0, 1},\n{\"2025-03\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 72, 72, 0, 1},\n{\"2025-03\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 67, 67, 0, 1},\n{\"2025-03\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 67, 67, 1, 0},\n{\"2025-03\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 125, 125, 0, 1},\n{\"2025-03\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 133, 133, 0, 1},\n{\"2025-03\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 131, 131, 0, 1},\n{\"2025-03\", \"North\", \"CASE-07\", \"Meridian Components\", 92, 92, 1, 0},\n{\"2025-03\", \"North\", \"CASE-07\", \"Meridian Components\", 94, 94, 0, 1},\n{\"2025-03\", \"North\", \"CASE-07\", \"Meridian Components\", 98, 90, 1, 0},\n{\"2025-03\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 93, 93, 0, 1},\n{\"2025-03\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 99, 99, 0, 1},\n{\"2025-03\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 91, 91, 1, 0},\n{\"2025-03\", \"West\", \"BAG-01\", \"Meridian Components\", 115, 115, 0, 1},\n{\"2025-03\", \"West\", \"BAG-01\", \"Meridian Components\", 118, 112, 1, 0},\n{\"2025-03\", \"West\", \"BAG-01\", \"Meridian Components\", 112, 112, 0, 1},\n{\"2025-03\", \"West\", \"BAG-02\", \"Harbor Goods\", 166, 166, 0, 1},\n{\"2025-03\", \"West\", \"BAG-02\", \"Harbor Goods\", 167, 167, 1, 0},\n{\"2025-03\", \"West\", \"BAG-02\", \"Harbor Goods\", 157, 157, 0, 1},\n{\"2025-03\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 57, 57, 0, 1},\n{\"2025-03\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 55, 55, 0, 1},\n{\"2025-03\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 59, 59, 0, 1},\n{\"2025-03\", \"West\", \"HUB-04\", \"Meridian Components\", 51, 51, 0, 1},\n{\"2025-03\", \"West\", \"HUB-04\", \"Meridian Components\", 51, 51, 1, 0},\n{\"2025-03\", \"West\", \"HUB-04\", \"Meridian Components\", 55, 55, 0, 1},\n{\"2025-03\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 151, 151, 0, 1},\n{\"2025-03\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 148, 148, 0, 1},\n{\"2025-03\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 143, 143, 0, 1},\n{\"2025-03\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 103, 103, 0, 1},\n{\"2025-03\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 89, 89, 0, 1},\n{\"2025-03\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 92, 92, 0, 1},\n{\"2025-03\", \"West\", \"CASE-07\", \"Meridian Components\", 168, 168, 1, 0},\n{\"2025-03\", \"West\", \"CASE-07\", \"Meridian Components\", 171, 163, 0, 0},\n{\"2025-03\", \"West\", \"CASE-07\", \"Meridian Components\", 168, 168, 0, 1},\n{\"2025-03\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 161, 161, 0, 1},\n{\"2025-03\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 168, 168, 1, 0},\n{\"2025-03\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 171, 171, 0, 1},\n{\"2025-03\", \"South\", \"BAG-01\", \"Meridian Components\", 136, 136, 0, 1},\n{\"2025-03\", \"South\", \"BAG-01\", \"Meridian Components\", 150, 150, 0, 1},\n{\"2025-03\", \"South\", \"BAG-01\", \"Meridian Components\", 142, 142, 0, 1},\n{\"2025-03\", \"South\", \"BAG-02\", \"Harbor Goods\", 63, 63, 0, 1},\n{\"2025-03\", \"South\", \"BAG-02\", \"Harbor Goods\", 67, 67, 0, 1},\n{\"2025-03\", \"South\", \"BAG-02\", \"Harbor Goods\", 73, 73, 0, 1},\n{\"2025-03\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 69, 69, 0, 1},\n{\"2025-03\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 69, 63, 0, 0},\n{\"2025-03\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 74, 74, 0, 1},\n{\"2025-03\", \"South\", \"HUB-04\", \"Meridian Components\", 90, 90, 0, 1},\n{\"2025-03\", \"South\", \"HUB-04\", \"Meridian Components\", 91, 91, 0, 1},\n{\"2025-03\", \"South\", \"HUB-04\", \"Meridian Components\", 81, 81, 0, 1},\n{\"2025-03\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 97, 97, 0, 1},\n{\"2025-03\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 102, 90, 0, 0},\n{\"2025-03\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 105, 105, 0, 1},\n{\"2025-03\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 51, 51, 0, 1},\n{\"2025-03\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 62, 62, 0, 1},\n{\"2025-03\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 55, 55, 0, 1},\n{\"2025-03\", \"South\", \"CASE-07\", \"Meridian Components\", 141, 141, 0, 1},\n{\"2025-03\", \"South\", \"CASE-07\", \"Meridian Components\", 139, 139, 0, 1},\n{\"2025-03\", \"South\", \"CASE-07\", \"Meridian Components\", 144, 135, 0, 0},\n{\"2025-03\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 122, 122, 0, 1},\n{\"2025-03\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 118, 118, 0, 1},\n{\"2025-03\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 124, 124, 0, 1},\n{\"2025-03\", \"East\", \"BAG-01\", \"Meridian Components\", 123, 123, 0, 1},\n{\"2025-03\", \"East\", \"BAG-01\", \"Meridian Components\", 122, 122, 0, 1},\n{\"2025-03\", \"East\", \"BAG-01\", \"Meridian Components\", 129, 129, 1, 0},\n{\"2025-03\", \"East\", \"BAG-02\", \"Harbor Goods\", 54, 54, 0, 1},\n{\"2025-03\", \"East\", \"BAG-02\", \"Harbor Goods\", 54, 54, 0, 1},\n{\"2025-03\", \"East\", \"BAG-02\", \"Harbor Goods\", 55, 55, 0, 1},\n{\"2025-03\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 124, 124, 0, 1},\n{\"2025-03\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 121, 121, 0, 1},\n{\"2025-03\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 120, 120, 0, 1},\n{\"2025-03\", \"East\", \"HUB-04\", \"Meridian Components\", 69, 66, 0, 0},\n{\"2025-03\", \"East\", \"HUB-04\", \"Meridian Components\", 61, 61, 0, 1},\n{\"2025-03\", \"East\", \"HUB-04\", \"Meridian Components\", 70, 70, 0, 1},\n{\"2025-03\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 119, 119, 0, 1},\n{\"2025-03\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 119, 119, 0, 1},\n{\"2025-03\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 119, 119, 0, 1},\n{\"2025-03\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 106, 106, 0, 1},\n{\"2025-03\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 115, 115, 0, 1},\n{\"2025-03\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 107, 107, 0, 1},\n{\"2025-03\", \"East\", \"CASE-07\", \"Meridian Components\", 154, 145, 0, 0},\n{\"2025-03\", \"East\", \"CASE-07\", \"Meridian Components\", 147, 147, 0, 1},\n{\"2025-03\", \"East\", \"CASE-07\", \"Meridian Components\", 154, 154, 0, 1},\n{\"2025-03\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 132, 132, 1, 0},\n{\"2025-03\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 143, 136, 0, 0},\n{\"2025-03\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 135, 135, 1, 0},\n{\"2025-04\", \"North\", \"BAG-01\", \"Meridian Components\", 54, 42, 1, 0},\n{\"2025-04\", \"North\", \"BAG-01\", \"Meridian Components\", 50, 42, 0, 0},\n{\"2025-04\", \"North\", \"BAG-01\", \"Meridian Components\", 62, 62, 0, 1},\n{\"2025-04\", \"North\", \"BAG-02\", \"Harbor Goods\", 93, 93, 0, 1},\n{\"2025-04\", \"North\", \"BAG-02\", \"Harbor Goods\", 98, 98, 0, 1},\n{\"2025-04\", \"North\", \"BAG-02\", \"Harbor Goods\", 99, 99, 0, 1},\n{\"2025-04\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 157, 157, 0, 1},\n{\"2025-04\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 158, 158, 0, 1},\n{\"2025-04\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 162, 162, 1, 0},\n{\"2025-04\", \"North\", \"HUB-04\", \"Meridian Components\", 160, 160, 0, 1},\n{\"2025-04\", \"North\", \"HUB-04\", \"Meridian Components\", 149, 149, 0, 1},\n{\"2025-04\", \"North\", \"HUB-04\", \"Meridian Components\", 152, 152, 0, 1},\n{\"2025-04\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 137, 137, 0, 1},\n{\"2025-04\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 137, 137, 0, 1},\n{\"2025-04\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 127, 127, 0, 1},\n{\"2025-04\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 106, 106, 0, 1},\n{\"2025-04\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 100, 100, 0, 1},\n{\"2025-04\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 104, 104, 0, 1},\n{\"2025-04\", \"North\", \"CASE-07\", \"Meridian Components\", 177, 177, 1, 0},\n{\"2025-04\", \"North\", \"CASE-07\", \"Meridian Components\", 174, 172, 0, 0},\n{\"2025-04\", \"North\", \"CASE-07\", \"Meridian Components\", 167, 151, 0, 0},\n{\"2025-04\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 113, 113, 0, 1},\n{\"2025-04\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 119, 119, 0, 1},\n{\"2025-04\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 118, 118, 0, 1},\n{\"2025-04\", \"West\", \"BAG-01\", \"Meridian Components\", 175, 175, 0, 1},\n{\"2025-04\", \"West\", \"BAG-01\", \"Meridian Components\", 167, 167, 1, 0},\n{\"2025-04\", \"West\", \"BAG-01\", \"Meridian Components\", 174, 160, 0, 0},\n{\"2025-04\", \"West\", \"BAG-02\", \"Harbor Goods\", 121, 121, 0, 1},\n{\"2025-04\", \"West\", \"BAG-02\", \"Harbor Goods\", 128, 121, 0, 0},\n{\"2025-04\", \"West\", \"BAG-02\", \"Harbor Goods\", 117, 117, 0, 1},\n{\"2025-04\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 128, 128, 0, 1},\n{\"2025-04\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 134, 134, 0, 1},\n{\"2025-04\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 138, 138, 0, 1},\n{\"2025-04\", \"West\", \"HUB-04\", \"Meridian Components\", 174, 174, 1, 0},\n{\"2025-04\", \"West\", \"HUB-04\", \"Meridian Components\", 176, 176, 1, 0},\n{\"2025-04\", \"West\", \"HUB-04\", \"Meridian Components\", 167, 167, 0, 1},\n{\"2025-04\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 116, 114, 0, 0},\n{\"2025-04\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 105, 105, 0, 1},\n{\"2025-04\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 108, 108, 0, 1},\n{\"2025-04\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 112, 112, 0, 1},\n{\"2025-04\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 125, 125, 0, 1},\n{\"2025-04\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 116, 116, 0, 1},\n{\"2025-04\", \"West\", \"CASE-07\", \"Meridian Components\", 86, 86, 0, 1},\n{\"2025-04\", \"West\", \"CASE-07\", \"Meridian Components\", 80, 80, 0, 1},\n{\"2025-04\", \"West\", \"CASE-07\", \"Meridian Components\", 77, 77, 0, 1},\n{\"2025-04\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 127, 127, 0, 1},\n{\"2025-04\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 129, 129, 0, 1},\n{\"2025-04\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 135, 135, 0, 1},\n{\"2025-04\", \"South\", \"BAG-01\", \"Meridian Components\", 149, 137, 0, 0},\n{\"2025-04\", \"South\", \"BAG-01\", \"Meridian Components\", 151, 151, 0, 1},\n{\"2025-04\", \"South\", \"BAG-01\", \"Meridian Components\", 148, 148, 1, 0},\n{\"2025-04\", \"South\", \"BAG-02\", \"Harbor Goods\", 60, 60, 0, 1},\n{\"2025-04\", \"South\", \"BAG-02\", \"Harbor Goods\", 68, 58, 0, 0},\n{\"2025-04\", \"South\", \"BAG-02\", \"Harbor Goods\", 61, 61, 0, 1},\n{\"2025-04\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 87, 87, 0, 1},\n{\"2025-04\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 90, 90, 0, 1},\n{\"2025-04\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 84, 84, 0, 1},\n{\"2025-04\", \"South\", \"HUB-04\", \"Meridian Components\", 145, 145, 0, 1},\n{\"2025-04\", \"South\", \"HUB-04\", \"Meridian Components\", 154, 154, 1, 0},\n{\"2025-04\", \"South\", \"HUB-04\", \"Meridian Components\", 144, 144, 1, 0},\n{\"2025-04\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 55, 55, 0, 1},\n{\"2025-04\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 65, 65, 0, 1},\n{\"2025-04\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 63, 63, 0, 1},\n{\"2025-04\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 87, 87, 0, 1},\n{\"2025-04\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 81, 81, 0, 1},\n{\"2025-04\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 76, 76, 0, 1},\n{\"2025-04\", \"South\", \"CASE-07\", \"Meridian Components\", 65, 65, 0, 1},\n{\"2025-04\", \"South\", \"CASE-07\", \"Meridian Components\", 66, 66, 0, 1},\n{\"2025-04\", \"South\", \"CASE-07\", \"Meridian Components\", 74, 74, 0, 1},\n{\"2025-04\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 76, 76, 0, 1},\n{\"2025-04\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 77, 77, 0, 1},\n{\"2025-04\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 75, 75, 1, 0},\n{\"2025-04\", \"East\", \"BAG-01\", \"Meridian Components\", 121, 121, 1, 0},\n{\"2025-04\", \"East\", \"BAG-01\", \"Meridian Components\", 124, 124, 1, 0},\n{\"2025-04\", \"East\", \"BAG-01\", \"Meridian Components\", 133, 133, 1, 0},\n{\"2025-04\", \"East\", \"BAG-02\", \"Harbor Goods\", 106, 106, 0, 1},\n{\"2025-04\", \"East\", \"BAG-02\", \"Harbor Goods\", 111, 111, 0, 1},\n{\"2025-04\", \"East\", \"BAG-02\", \"Harbor Goods\", 111, 111, 0, 1},\n{\"2025-04\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 135, 135, 0, 1},\n{\"2025-04\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 133, 133, 0, 1},\n{\"2025-04\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 146, 146, 0, 1},\n{\"2025-04\", \"East\", \"HUB-04\", \"Meridian Components\", 161, 161, 0, 1},\n{\"2025-04\", \"East\", \"HUB-04\", \"Meridian Components\", 170, 170, 0, 1},\n{\"2025-04\", \"East\", \"HUB-04\", \"Meridian Components\", 172, 172, 0, 1},\n{\"2025-04\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 165, 165, 0, 1},\n{\"2025-04\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 169, 169, 1, 0},\n{\"2025-04\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 174, 174, 0, 1},\n{\"2025-04\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 143, 143, 0, 1},\n{\"2025-04\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 149, 149, 0, 1},\n{\"2025-04\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 147, 147, 0, 1},\n{\"2025-04\", \"East\", \"CASE-07\", \"Meridian Components\", 139, 139, 0, 1},\n{\"2025-04\", \"East\", \"CASE-07\", \"Meridian Components\", 136, 136, 0, 1},\n{\"2025-04\", \"East\", \"CASE-07\", \"Meridian Components\", 128, 128, 0, 1},\n{\"2025-04\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 164, 164, 0, 1},\n{\"2025-04\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 154, 154, 0, 1},\n{\"2025-04\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 157, 157, 0, 1},\n{\"2025-05\", \"North\", \"BAG-01\", \"Meridian Components\", 75, 66, 0, 0},\n{\"2025-05\", \"North\", \"BAG-01\", \"Meridian Components\", 82, 80, 0, 0},\n{\"2025-05\", \"North\", \"BAG-01\", \"Meridian Components\", 86, 86, 0, 1},\n{\"2025-05\", \"North\", \"BAG-02\", \"Harbor Goods\", 119, 119, 0, 1},\n{\"2025-05\", \"North\", \"BAG-02\", \"Harbor Goods\", 127, 127, 1, 0},\n{\"2025-05\", \"North\", \"BAG-02\", \"Harbor Goods\", 116, 116, 0, 1},\n{\"2025-05\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 114, 114, 0, 1},\n{\"2025-05\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 106, 106, 0, 1},\n{\"2025-05\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 107, 107, 0, 1},\n{\"2025-05\", \"North\", \"HUB-04\", \"Meridian Components\", 87, 87, 0, 1},\n{\"2025-05\", \"North\", \"HUB-04\", \"Meridian Components\", 91, 91, 1, 0},\n{\"2025-05\", \"North\", \"HUB-04\", \"Meridian Components\", 89, 89, 1, 0},\n{\"2025-05\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 93, 93, 0, 1},\n{\"2025-05\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 86, 86, 0, 1},\n{\"2025-05\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 96, 96, 0, 1},\n{\"2025-05\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 81, 81, 0, 1},\n{\"2025-05\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 91, 91, 0, 1},\n{\"2025-05\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 83, 83, 0, 1},\n{\"2025-05\", \"North\", \"CASE-07\", \"Meridian Components\", 75, 75, 1, 0},\n{\"2025-05\", \"North\", \"CASE-07\", \"Meridian Components\", 69, 69, 0, 1},\n{\"2025-05\", \"North\", \"CASE-07\", \"Meridian Components\", 76, 76, 1, 0},\n{\"2025-05\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 80, 80, 0, 1},\n{\"2025-05\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 85, 85, 0, 1},\n{\"2025-05\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 86, 86, 0, 1},\n{\"2025-05\", \"West\", \"BAG-01\", \"Meridian Components\", 67, 67, 0, 1},\n{\"2025-05\", \"West\", \"BAG-01\", \"Meridian Components\", 60, 60, 0, 1},\n{\"2025-05\", \"West\", \"BAG-01\", \"Meridian Components\", 62, 62, 1, 0},\n{\"2025-05\", \"West\", \"BAG-02\", \"Harbor Goods\", 76, 76, 1, 0},\n{\"2025-05\", \"West\", \"BAG-02\", \"Harbor Goods\", 89, 89, 0, 1},\n{\"2025-05\", \"West\", \"BAG-02\", \"Harbor Goods\", 90, 90, 0, 1},\n{\"2025-05\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 89, 89, 0, 1},\n{\"2025-05\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 79, 79, 0, 1},\n{\"2025-05\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 89, 89, 0, 1},\n{\"2025-05\", \"West\", \"HUB-04\", \"Meridian Components\", 117, 117, 0, 1},\n{\"2025-05\", \"West\", \"HUB-04\", \"Meridian Components\", 111, 111, 0, 1},\n{\"2025-05\", \"West\", \"HUB-04\", \"Meridian Components\", 118, 118, 1, 0},\n{\"2025-05\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 74, 74, 0, 1},\n{\"2025-05\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 59, 59, 0, 1},\n{\"2025-05\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 68, 68, 0, 1},\n{\"2025-05\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 159, 159, 0, 1},\n{\"2025-05\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 163, 163, 0, 1},\n{\"2025-05\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 155, 155, 0, 1},\n{\"2025-05\", \"West\", \"CASE-07\", \"Meridian Components\", 58, 58, 1, 0},\n{\"2025-05\", \"West\", \"CASE-07\", \"Meridian Components\", 63, 57, 0, 0},\n{\"2025-05\", \"West\", \"CASE-07\", \"Meridian Components\", 65, 65, 1, 0},\n{\"2025-05\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 93, 93, 0, 1},\n{\"2025-05\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 81, 81, 0, 1},\n{\"2025-05\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 79, 79, 0, 1},\n{\"2025-05\", \"South\", \"BAG-01\", \"Meridian Components\", 158, 158, 0, 1},\n{\"2025-05\", \"South\", \"BAG-01\", \"Meridian Components\", 148, 148, 1, 0},\n{\"2025-05\", \"South\", \"BAG-01\", \"Meridian Components\", 158, 143, 1, 0},\n{\"2025-05\", \"South\", \"BAG-02\", \"Harbor Goods\", 60, 60, 0, 1},\n{\"2025-05\", \"South\", \"BAG-02\", \"Harbor Goods\", 61, 61, 0, 1},\n{\"2025-05\", \"South\", \"BAG-02\", \"Harbor Goods\", 57, 57, 0, 1},\n{\"2025-05\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 55, 55, 0, 1},\n{\"2025-05\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 59, 59, 1, 0},\n{\"2025-05\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 65, 65, 0, 1},\n{\"2025-05\", \"South\", \"HUB-04\", \"Meridian Components\", 148, 148, 0, 1},\n{\"2025-05\", \"South\", \"HUB-04\", \"Meridian Components\", 152, 152, 0, 1},\n{\"2025-05\", \"South\", \"HUB-04\", \"Meridian Components\", 152, 152, 1, 0},\n{\"2025-05\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 106, 106, 0, 1},\n{\"2025-05\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 116, 116, 0, 1},\n{\"2025-05\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 111, 111, 1, 0},\n{\"2025-05\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 126, 126, 0, 1},\n{\"2025-05\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 111, 111, 0, 1},\n{\"2025-05\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 115, 115, 0, 1},\n{\"2025-05\", \"South\", \"CASE-07\", \"Meridian Components\", 113, 97, 0, 0},\n{\"2025-05\", \"South\", \"CASE-07\", \"Meridian Components\", 106, 106, 0, 1},\n{\"2025-05\", \"South\", \"CASE-07\", \"Meridian Components\", 106, 106, 0, 1},\n{\"2025-05\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 103, 103, 0, 1},\n{\"2025-05\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 110, 110, 0, 1},\n{\"2025-05\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 99, 87, 0, 0},\n{\"2025-05\", \"East\", \"BAG-01\", \"Meridian Components\", 87, 87, 0, 1},\n{\"2025-05\", \"East\", \"BAG-01\", \"Meridian Components\", 85, 85, 1, 0},\n{\"2025-05\", \"East\", \"BAG-01\", \"Meridian Components\", 96, 96, 0, 1},\n{\"2025-05\", \"East\", \"BAG-02\", \"Harbor Goods\", 158, 158, 0, 1},\n{\"2025-05\", \"East\", \"BAG-02\", \"Harbor Goods\", 171, 171, 0, 1},\n{\"2025-05\", \"East\", \"BAG-02\", \"Harbor Goods\", 169, 169, 0, 1},\n{\"2025-05\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 127, 127, 0, 1},\n{\"2025-05\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 132, 132, 0, 1},\n{\"2025-05\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 128, 128, 0, 1},\n{\"2025-05\", \"East\", \"HUB-04\", \"Meridian Components\", 151, 151, 1, 0},\n{\"2025-05\", \"East\", \"HUB-04\", \"Meridian Components\", 159, 159, 0, 1},\n{\"2025-05\", \"East\", \"HUB-04\", \"Meridian Components\", 156, 156, 0, 1},\n{\"2025-05\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 77, 77, 0, 1},\n{\"2025-05\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 78, 78, 0, 1},\n{\"2025-05\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 79, 79, 0, 1},\n{\"2025-05\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 107, 107, 0, 1},\n{\"2025-05\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 102, 102, 0, 1},\n{\"2025-05\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 101, 101, 0, 1},\n{\"2025-05\", \"East\", \"CASE-07\", \"Meridian Components\", 117, 117, 0, 1},\n{\"2025-05\", \"East\", \"CASE-07\", \"Meridian Components\", 107, 100, 0, 0},\n{\"2025-05\", \"East\", \"CASE-07\", \"Meridian Components\", 113, 113, 0, 1},\n{\"2025-05\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 117, 117, 0, 1},\n{\"2025-05\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 112, 112, 0, 1},\n{\"2025-05\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 107, 107, 0, 1},\n{\"2025-06\", \"North\", \"BAG-01\", \"Meridian Components\", 139, 139, 0, 1},\n{\"2025-06\", \"North\", \"BAG-01\", \"Meridian Components\", 137, 137, 0, 1},\n{\"2025-06\", \"North\", \"BAG-01\", \"Meridian Components\", 136, 136, 0, 1},\n{\"2025-06\", \"North\", \"BAG-02\", \"Harbor Goods\", 90, 90, 0, 1},\n{\"2025-06\", \"North\", \"BAG-02\", \"Harbor Goods\", 99, 99, 0, 1},\n{\"2025-06\", \"North\", \"BAG-02\", \"Harbor Goods\", 91, 91, 0, 1},\n{\"2025-06\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 145, 145, 0, 1},\n{\"2025-06\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 150, 150, 1, 0},\n{\"2025-06\", \"North\", \"CABLE-03\", \"Ridgeway Supply\", 157, 157, 1, 0},\n{\"2025-06\", \"North\", \"HUB-04\", \"Meridian Components\", 130, 130, 0, 1},\n{\"2025-06\", \"North\", \"HUB-04\", \"Meridian Components\", 129, 129, 1, 0},\n{\"2025-06\", \"North\", \"HUB-04\", \"Meridian Components\", 120, 109, 0, 0},\n{\"2025-06\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 80, 80, 0, 1},\n{\"2025-06\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 77, 77, 0, 1},\n{\"2025-06\", \"North\", \"BOTTLE-05\", \"Harbor Goods\", 83, 83, 0, 1},\n{\"2025-06\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 142, 142, 0, 1},\n{\"2025-06\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 138, 138, 1, 0},\n{\"2025-06\", \"North\", \"LAMP-06\", \"Ridgeway Supply\", 141, 141, 0, 1},\n{\"2025-06\", \"North\", \"CASE-07\", \"Meridian Components\", 117, 117, 0, 1},\n{\"2025-06\", \"North\", \"CASE-07\", \"Meridian Components\", 109, 109, 0, 1},\n{\"2025-06\", \"North\", \"CASE-07\", \"Meridian Components\", 105, 105, 0, 1},\n{\"2025-06\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 79, 79, 1, 0},\n{\"2025-06\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 68, 68, 0, 1},\n{\"2025-06\", \"North\", \"PILLOW-08\", \"Harbor Goods\", 70, 70, 0, 1},\n{\"2025-06\", \"West\", \"BAG-01\", \"Meridian Components\", 122, 122, 0, 1},\n{\"2025-06\", \"West\", \"BAG-01\", \"Meridian Components\", 111, 111, 0, 1},\n{\"2025-06\", \"West\", \"BAG-01\", \"Meridian Components\", 113, 113, 0, 1},\n{\"2025-06\", \"West\", \"BAG-02\", \"Harbor Goods\", 182, 182, 0, 1},\n{\"2025-06\", \"West\", \"BAG-02\", \"Harbor Goods\", 167, 167, 0, 1},\n{\"2025-06\", \"West\", \"BAG-02\", \"Harbor Goods\", 179, 179, 0, 1},\n{\"2025-06\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 141, 141, 0, 1},\n{\"2025-06\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 133, 133, 0, 1},\n{\"2025-06\", \"West\", \"CABLE-03\", \"Ridgeway Supply\", 128, 128, 0, 1},\n{\"2025-06\", \"West\", \"HUB-04\", \"Meridian Components\", 169, 169, 0, 1},\n{\"2025-06\", \"West\", \"HUB-04\", \"Meridian Components\", 169, 167, 0, 0},\n{\"2025-06\", \"West\", \"HUB-04\", \"Meridian Components\", 170, 170, 1, 0},\n{\"2025-06\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 114, 114, 0, 1},\n{\"2025-06\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 114, 114, 0, 1},\n{\"2025-06\", \"West\", \"BOTTLE-05\", \"Harbor Goods\", 107, 107, 0, 1},\n{\"2025-06\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 91, 91, 0, 1},\n{\"2025-06\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 93, 93, 0, 1},\n{\"2025-06\", \"West\", \"LAMP-06\", \"Ridgeway Supply\", 96, 96, 0, 1},\n{\"2025-06\", \"West\", \"CASE-07\", \"Meridian Components\", 93, 93, 0, 1},\n{\"2025-06\", \"West\", \"CASE-07\", \"Meridian Components\", 87, 87, 1, 0},\n{\"2025-06\", \"West\", \"CASE-07\", \"Meridian Components\", 90, 90, 0, 1},\n{\"2025-06\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 76, 76, 0, 1},\n{\"2025-06\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 79, 76, 0, 0},\n{\"2025-06\", \"West\", \"PILLOW-08\", \"Harbor Goods\", 71, 71, 0, 1},\n{\"2025-06\", \"South\", \"BAG-01\", \"Meridian Components\", 63, 63, 0, 1},\n{\"2025-06\", \"South\", \"BAG-01\", \"Meridian Components\", 74, 74, 0, 1},\n{\"2025-06\", \"South\", \"BAG-01\", \"Meridian Components\", 60, 60, 1, 0},\n{\"2025-06\", \"South\", \"BAG-02\", \"Harbor Goods\", 76, 76, 0, 1},\n{\"2025-06\", \"South\", \"BAG-02\", \"Harbor Goods\", 79, 79, 0, 1},\n{\"2025-06\", \"South\", \"BAG-02\", \"Harbor Goods\", 75, 75, 0, 1},\n{\"2025-06\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 137, 137, 0, 1},\n{\"2025-06\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 137, 137, 0, 1},\n{\"2025-06\", \"South\", \"CABLE-03\", \"Ridgeway Supply\", 135, 135, 0, 1},\n{\"2025-06\", \"South\", \"HUB-04\", \"Meridian Components\", 109, 109, 0, 1},\n{\"2025-06\", \"South\", \"HUB-04\", \"Meridian Components\", 101, 101, 0, 1},\n{\"2025-06\", \"South\", \"HUB-04\", \"Meridian Components\", 111, 111, 0, 1},\n{\"2025-06\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 130, 125, 0, 0},\n{\"2025-06\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 133, 133, 0, 1},\n{\"2025-06\", \"South\", \"BOTTLE-05\", \"Harbor Goods\", 135, 135, 0, 1},\n{\"2025-06\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 70, 57, 0, 0},\n{\"2025-06\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 69, 69, 0, 1},\n{\"2025-06\", \"South\", \"LAMP-06\", \"Ridgeway Supply\", 76, 76, 0, 1},\n{\"2025-06\", \"South\", \"CASE-07\", \"Meridian Components\", 128, 128, 0, 1},\n{\"2025-06\", \"South\", \"CASE-07\", \"Meridian Components\", 139, 139, 0, 1},\n{\"2025-06\", \"South\", \"CASE-07\", \"Meridian Components\", 130, 130, 0, 1},\n{\"2025-06\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 72, 72, 0, 1},\n{\"2025-06\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 81, 81, 0, 1},\n{\"2025-06\", \"South\", \"PILLOW-08\", \"Harbor Goods\", 75, 75, 0, 1},\n{\"2025-06\", \"East\", \"BAG-01\", \"Meridian Components\", 72, 72, 0, 1},\n{\"2025-06\", \"East\", \"BAG-01\", \"Meridian Components\", 80, 80, 0, 1},\n{\"2025-06\", \"East\", \"BAG-01\", \"Meridian Components\", 72, 72, 1, 0},\n{\"2025-06\", \"East\", \"BAG-02\", \"Harbor Goods\", 62, 62, 0, 1},\n{\"2025-06\", \"East\", \"BAG-02\", \"Harbor Goods\", 68, 68, 0, 1},\n{\"2025-06\", \"East\", \"BAG-02\", \"Harbor Goods\", 60, 60, 0, 1},\n{\"2025-06\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 179, 179, 0, 1},\n{\"2025-06\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 165, 165, 0, 1},\n{\"2025-06\", \"East\", \"CABLE-03\", \"Ridgeway Supply\", 171, 161, 0, 0},\n{\"2025-06\", \"East\", \"HUB-04\", \"Meridian Components\", 166, 166, 0, 1},\n{\"2025-06\", \"East\", \"HUB-04\", \"Meridian Components\", 153, 153, 1, 0},\n{\"2025-06\", \"East\", \"HUB-04\", \"Meridian Components\", 163, 163, 0, 1},\n{\"2025-06\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 160, 160, 0, 1},\n{\"2025-06\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 159, 159, 0, 1},\n{\"2025-06\", \"East\", \"BOTTLE-05\", \"Harbor Goods\", 149, 145, 0, 0},\n{\"2025-06\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 63, 63, 1, 0},\n{\"2025-06\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 64, 64, 0, 1},\n{\"2025-06\", \"East\", \"LAMP-06\", \"Ridgeway Supply\", 65, 65, 0, 1},\n{\"2025-06\", \"East\", \"CASE-07\", \"Meridian Components\", 103, 103, 0, 1},\n{\"2025-06\", \"East\", \"CASE-07\", \"Meridian Components\", 102, 95, 0, 0},\n{\"2025-06\", \"East\", \"CASE-07\", \"Meridian Components\", 94, 94, 1, 0},\n{\"2025-06\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 165, 165, 0, 1},\n{\"2025-06\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 164, 164, 0, 1},\n{\"2025-06\", \"East\", \"PILLOW-08\", \"Harbor Goods\", 164, 164, 0, 1}\n})"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "Inventory_Month",
+        "fromTable": "Inventory",
+        "fromColumn": "Month",
+        "toTable": "Month",
+        "toColumn": "Month",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Inventory_Warehouse",
+        "fromTable": "Inventory",
+        "fromColumn": "Region",
+        "toTable": "Warehouse",
+        "toColumn": "Region",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Inventory_Product",
+        "fromTable": "Inventory",
+        "fromColumn": "SKU",
+        "toTable": "Product",
+        "toColumn": "SKU",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Demand_Month",
+        "fromTable": "Demand",
+        "fromColumn": "Month",
+        "toTable": "Month",
+        "toColumn": "Month",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Demand_Warehouse",
+        "fromTable": "Demand",
+        "fromColumn": "Region",
+        "toTable": "Warehouse",
+        "toColumn": "Region",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Demand_Product",
+        "fromTable": "Demand",
+        "fromColumn": "SKU",
+        "toTable": "Product",
+        "toColumn": "SKU",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Receipts_Month",
+        "fromTable": "Receipts",
+        "fromColumn": "Month",
+        "toTable": "Month",
+        "toColumn": "Month",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Receipts_Warehouse",
+        "fromTable": "Receipts",
+        "fromColumn": "Region",
+        "toTable": "Warehouse",
+        "toColumn": "Region",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Receipts_Product",
+        "fromTable": "Receipts",
+        "fromColumn": "SKU",
+        "toTable": "Product",
+        "toColumn": "SKU",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Receipts_Supplier",
+        "fromTable": "Receipts",
+        "fromColumn": "Supplier",
+        "toTable": "Supplier",
+        "toColumn": "Supplier",
+        "crossFilteringBehavior": "oneDirection"
+      }
+    ]
+  }
+}

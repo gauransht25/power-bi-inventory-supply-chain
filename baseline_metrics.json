@@ -1,0 +1,11 @@
+{
+  "latest_month": "2025-06",
+  "latest_inventory_value_inr": 2127870,
+  "latest_on_hand_units": 5394,
+  "latest_below_reorder_sku_sites": 3,
+  "period_fill_rate": 0.981591607643993,
+  "period_unfilled_units": 1102,
+  "period_supplier_otif": 0.7482638888888888,
+  "period_late_po_lines": 101,
+  "period_short_receipt_units": 470
+}
